@@ -4,6 +4,8 @@ import obd_io
 import serial
 import platform
 import obd_sensors
+import json
+
 from datetime import datetime
 import time
 
@@ -59,16 +61,17 @@ class OBD_Capture():
         #Loop until Ctrl C is pressed        
         try:
             while True:
+                json_data = []
                 localtime = datetime.now()
                 current_time = str(localtime.hour)+":"+str(localtime.minute)+":"+str(localtime.second)+"."+str(localtime.microsecond)
-                log_string = current_time + "\n"
+                json_data.append({'Time':current_time})
                 results = {}
                 for supportedSensor in self.supportedSensorList:
                     sensorIndex = supportedSensor[0]
                     (name, value, unit) = self.port.sensor(sensorIndex)
-                    log_string += name + " = " + str(value) + " " + str(unit) + "\n"
+                    json_data.append({name+' ('+units+')':value})
 
-                print log_string,
+                print json.dump(json_data)
                 time.sleep(0.5)
 
         except KeyboardInterrupt:
