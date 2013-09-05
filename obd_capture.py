@@ -69,9 +69,9 @@ class OBD_Capture():
                 for supportedSensor in self.supportedSensorList:
                     sensorIndex = supportedSensor[0]
                     (name, value, unit) = self.port.sensor(sensorIndex)
-                    json_data.append({name+' ('+units+')':value})
+                    json_data.append({name:value + ' ' + unit})
 
-                print json.dump(json_data)
+                print json.dumps(json_data)		#SEND THIS TO SERVER PERIODICALLY (Single packet of information)
                 time.sleep(0.5)
 
         except KeyboardInterrupt:
