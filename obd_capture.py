@@ -22,7 +22,7 @@ class OBD_Capture():
         HOST = '203.42.134.229'    # The remote host. Correct address.
         PORT = 50007              # The same port as used by the server
         self.soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        soc.connect((HOST, PORT))    #&L Will fail if server does not accept. Might be worth trying on a local network.
+        self.soc.connect((HOST, PORT))    #&L Will fail if server does not accept. Might be worth trying on a local network.
         #&J I am pretty sure some sort of authentication will be needed here when connecting to the server ??
 
     def socIsConnected(self):
