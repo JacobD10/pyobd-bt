@@ -5,6 +5,7 @@ import serial
 import platform
 import obd_sensors
 import json
+import socket    #&L Added socket library
 
 from datetime import datetime
 import time
@@ -14,7 +15,18 @@ from obd_utils import scanSerial
 class OBD_Capture():
     def __init__(self):
         self.port = None
+        self.soc = None #&L add socket as member
         localtime = time.localtime(time.time())
+
+    def socConnect(self): #&L Added function to connect to host. We should probably change the port. Also, we should propbably add some error checking.
+        HOST = '203.42.134.229'    # The remote host. Correct address.
+        PORT = 50007              # The same port as used by the server
+        self.soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        soc.connect((HOST, PORT))    #&L Will fail if server does not accept. Might be worth trying on a local network.
+        #&J I am pretty sure some sort of authentication will be needed here when connecting to the server ??
+
+    def socIsConnected(self):
+        return self.soc;
 
     def connect(self):
         portnames = scanSerial()
@@ -71,8 +83,9 @@ class OBD_Capture():
                     (name, value, unit) = self.port.sensor(sensorIndex)
                     json_data.append({name:value + ' ' + unit})
 
-                print json.dumps(json_data)		#SEND THIS TO SERVER PERIODICALLY (Single packet of information)
-                time.sleep(0.5)
+                #print json.dumps(json_data)     #SEND THIS TO SERVER PERIODICALLY (Single packet of information)
+                self.soc.send(json.dumps(json_data))    #&L Send to server.
+                time.sleep(0.5)                 #Should probably iterate a few times befo
 
         except KeyboardInterrupt:
             self.port.close()
@@ -82,8 +95,11 @@ if __name__ == "__main__":
 
     o = OBD_Capture()
     o.connect()
+    o.socConnect()    #&L Added code to connect to server.
     time.sleep(3)
-    if not o.is_connected():
-        print "Not connected"
+    if ( not o.is_connected() ): #&L Added check for socket; don't run if se
+        print "Not connected to OBD Dongle"
+    elif ( not o.socIsConnected() ): #&J Altered for mre accurate debug
+        print "Not connected to Server"
     else:
         o.capture_data()
