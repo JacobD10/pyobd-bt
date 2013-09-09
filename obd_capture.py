@@ -6,7 +6,7 @@ import platform
 import obd_sensors
 import json
 import socket    #&L Added socket library
-import urllib   #MJ Added url library ---If < Python 3 use urllib2
+import urllib2   #MJ Added url library (urllib) ---If Python 2.x use urllib2
 
 from datetime import datetime
 import time
@@ -23,8 +23,8 @@ class OBD_Capture():
         HOST = '203.42.134.229'    # The remote host. Correct address.
         PORT = 50007              # The same port as used by the server
         self.soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.soc.connect((HOST, PORT))    #&J Should be self.soc.connect()  ??  #&L Will fail if server does not accept. Might be worth trying on a local network.
-        #&J I am pretty sure some sort of authentication will be needed here when connecting to the server ??
+        self.soc.connect((HOST, PORT))    #JD Should be self.soc.connect()  ??  #&L Will fail if server does not accept. Might be worth trying on a local network.
+        #JD I am pretty sure some sort of authentication will be needed here when connecting to the server ??
 
     def socIsConnected(self):
         return self.soc;
@@ -74,27 +74,38 @@ class OBD_Capture():
         #Loop until Ctrl C is pressed        
         try:
             while True:
-                json_data = []    #&J
+                json_data = []    #JD
                 localtime = datetime.now()
                 current_time = str(localtime.hour)+":"+str(localtime.minute)+":"+str(localtime.second)+"."+str(localtime.microsecond)
-                json_data.append({'Time':current_time})    #&J
+                json_data.append({'Time':current_time})    #JD
                 results = {}
                 for supportedSensor in self.supportedSensorList:
                     sensorIndex = supportedSensor[0]
                     (name, value, unit) = self.port.sensor(sensorIndex)
-                    json_data.append({name:value + ' ' + unit})    #&J
+                    json_data.append({name + " ("+unit+")":value})    #JD
 
-                #print json.dumps(json_data)         #&J SEND THIS TO SERVER PERIODICALLY (Single packet of information)
-                self.soc.send(json.dumps(json_data))    #&L Send to server.
+                print json.dumps(json_data)         #JD SEND THIS TO SERVER PERIODICALLY (Single packet of information)
+                #self.soc.send(json.dumps(json_data))   #JD using mitch's code #&L Send to server.
                 
+                #Jacob------------------Authentication-----------------------                
+                # Create an OpenerDirector with support for Basic HTTP Authentication...
+                auth_handler = urllib2.HTTPBasicAuthHandler()
+                auth_handler.add_password(realm='OBDII Info Upload',
+                                          uri='http://203.42.134.229/',
+                                          user='adam',
+                                          passwd='adam')
+                opener = urllib2.build_opener(auth_handler)
+                # ...and install it globally so it can be used with urlopen.
+                urllib2.install_opener(opener)
+                #------------------------------------------------------------
                 
                 #------------------------Mitch's Code------------------------
                 #Crease a http request, chuck in the correct address when adam gives us one
-                request = urllib.request.Request('http://203.42.134.229/')    #&J Added IP address, will assume saving to home directory
+                request = urllib2.Request('http://203.42.134.229/')    #JD Added IP address, will assume saving to home directory
                 #Assume that we have to do proper http, so add a header specifying that it's json
                 request.add_header('Content-Type', 'application/json')
                 #Send the request and attach the raw json data
-                response = urllib.request.urlopen(request,json.dumps(json_data))
+                response = urllib2.urlopen(request,json.dumps(json_data))
                 #----------------------------End-----------------------------
                 
                 time.sleep(0.5)                 #Should probably iterate a few times before sending json data
@@ -107,11 +118,11 @@ if __name__ == "__main__":
 
     o = OBD_Capture()
     o.connect()
-    #o.socConnect()    #&J stub, using mitch's code #&L Added code to connect to server.
+    #o.socConnect()    #JD stub, using mitch's code #&L Added code to connect to server.
     time.sleep(3)
     if ( not o.is_connected() ): #&L Added check for socket; don't run if se
         print "Not connected to OBD Dongle"
-    #elif ( not o.socIsConnected() ): #&J using mitch's code #&J Altered for more accurate debug
-    #    print "Not connected to Server" #&J using mitch's code
+    #elif ( not o.socIsConnected() ): #JD using mitch's code #JD Altered for more accurate debug
+    #    print "Not connected to Server" #JD using mitch's code
     else:
         o.capture_data()
