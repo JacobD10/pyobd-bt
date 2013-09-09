@@ -26,6 +26,7 @@ import serial
 import string
 import time
 import os
+import sys
 from math import ceil
 #import #wx #due to debugEvent messaging
 
@@ -260,7 +261,8 @@ class OBDPort:
          cmd = sensor.cmd
          self.send_command(cmd)
          data = self.get_result()
-         print '.'
+         sys.stdout.write('+')
+         sys.stdout.flush()
          #print "data: "+data
          
          if data:
