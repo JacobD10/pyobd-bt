@@ -6,6 +6,7 @@ import platform
 import obd_sensors
 import json
 import socket    #&L Added socket library
+import urllib   #MJ Added url library ---If < Python 3 use urllib2
 
 from datetime import datetime
 import time
@@ -73,19 +74,30 @@ class OBD_Capture():
         #Loop until Ctrl C is pressed        
         try:
             while True:
-                json_data = []
+                json_data = []    #&J
                 localtime = datetime.now()
                 current_time = str(localtime.hour)+":"+str(localtime.minute)+":"+str(localtime.second)+"."+str(localtime.microsecond)
-                json_data.append({'Time':current_time})
+                json_data.append({'Time':current_time})    #&J
                 results = {}
                 for supportedSensor in self.supportedSensorList:
                     sensorIndex = supportedSensor[0]
                     (name, value, unit) = self.port.sensor(sensorIndex)
-                    json_data.append({name:value + ' ' + unit})
+                    json_data.append({name:value + ' ' + unit})    #&J
 
-                #print json.dumps(json_data)     #SEND THIS TO SERVER PERIODICALLY (Single packet of information)
+                #print json.dumps(json_data)         #&J SEND THIS TO SERVER PERIODICALLY (Single packet of information)
                 self.soc.send(json.dumps(json_data))    #&L Send to server.
-                time.sleep(0.5)                 #Should probably iterate a few times befo
+                
+                
+                #------------------------Mitch's Code------------------------
+                #Crease a http request, chuck in the correct address when adam gives us one
+                request = urllib.request.Request('http://203.42.134.229/')    #&J Added IP address, will assume saving to home directory
+                #Assume that we have to do proper http, so add a header specifying that it's json
+                request.add_header('Content-Type', 'application/json')
+                #Send the request and attach the raw json data
+                response = urllib.request.urlopen(request,json.dumps(json_data))
+                #----------------------------End-----------------------------
+                
+                time.sleep(0.5)                 #Should probably iterate a few times before sending json data
 
         except KeyboardInterrupt:
             self.port.close()
@@ -95,11 +107,11 @@ if __name__ == "__main__":
 
     o = OBD_Capture()
     o.connect()
-    o.socConnect()    #&L Added code to connect to server.
+    #o.socConnect()    #&J stub, using mitch's code #&L Added code to connect to server.
     time.sleep(3)
     if ( not o.is_connected() ): #&L Added check for socket; don't run if se
         print "Not connected to OBD Dongle"
-    elif ( not o.socIsConnected() ): #&J Altered for mre accurate debug
-        print "Not connected to Server"
+    #elif ( not o.socIsConnected() ): #&J using mitch's code #&J Altered for more accurate debug
+    #    print "Not connected to Server" #&J using mitch's code
     else:
         o.capture_data()
