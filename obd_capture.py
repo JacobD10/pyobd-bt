@@ -26,6 +26,19 @@ class OBD_Capture():
         self.soc.connect((HOST, PORT))    #JD Should be self.soc.connect()  ??  #&L Will fail if server does not accept. Might be worth trying on a local network.
         #JD I am pretty sure some sort of authentication will be needed here when connecting to the server ??
 
+    def httpAuthenticate(self):                        
+        #Jacob------------------Authentication-----------------------                
+        # Create an OpenerDirector with support for Basic HTTP Authentication...
+        auth_handler = urllib2.HTTPBasicAuthHandler()
+        auth_handler.add_password(realm='OBDII',
+                                  uri='http://203.42.134.229/',
+                                  user='adam',        #JD also tried user|passwd combination uow|m2muow
+                                  passwd='adam')
+        opener = urllib2.build_opener(auth_handler)
+        # ...and install it globally so it can be used with urlopen.
+        urllib2.install_opener(opener)
+        #------------------------------------------------------------                
+		
     def socIsConnected(self):
         return self.soc;
 
@@ -62,7 +75,7 @@ class OBD_Capture():
                 self.supportedSensorList.append([i+1, obd_sensors.SENSORS[i+1]])
             else:
                 self.unsupportedSensorList.append([i+1, obd_sensors.SENSORS[i+1]])
-        print "--- Supported OBDII PIDs ---"
+        print "\n--- Supported OBDII PIDs ---"
         print "Index \t Name"
         for supportedSensor in self.supportedSensorList:
             print str(supportedSensor[0]) + "\t" + str(supportedSensor[1].shortname)        
@@ -84,26 +97,16 @@ class OBD_Capture():
                     sensorIndex = supportedSensor[0]
                     (name, value, unit) = self.port.sensor(sensorIndex)
                     json_data.append({name + " ("+unit+")":value})    #JD   fixed str and list issue
+                    print name + " = " + str(value) +" "+ unit
 
                 print "\n"+json.dumps(json_data)         #JD SEND THIS TO SERVER PERIODICALLY (Single packet of information)
                 #self.soc.send(json.dumps(json_data))   #JD using mitch's code #&L Send to server.
-                
-                #Jacob------------------Authentication-----------------------                
-                # Create an OpenerDirector with support for Basic HTTP Authentication...
-                auth_handler = urllib2.HTTPBasicAuthHandler()
-                auth_handler.add_password(realm='OBDII',
-                                          uri='http://203.42.134.229/',
-                                          user='adam',        #JD also tried user|passwd combination uow|m2muow
-                                          passwd='adam')
-                opener = urllib2.build_opener(auth_handler)
-                # ...and install it globally so it can be used with urlopen.
-                urllib2.install_opener(opener)
-                #------------------------------------------------------------
-                
+
                 #------------------------Mitch's Code------------------------
                 #Crease a http request, chuck in the correct address when adam gives us one
                 request = urllib2.Request('http://203.42.134.229/')    #JD Added IP address, will assume saving to home directory
                 #Assume that we have to do proper http, so add a header specifying that it's json
+                request.add_header('Authorization', b'Basic ' + base64.b64encode(username + b':' + password)) #&L Added 
                 request.add_header('Content-Type', 'application/json')
                 #Send the request and attach the raw json data
                 response = urllib2.urlopen(request,json.dumps(json_data))
@@ -119,6 +122,7 @@ if __name__ == "__main__":
 
     o = OBD_Capture()
     o.connect()
+	o.httpAuthenticate()
     #o.socConnect()    #JD stub, using mitch's code #&L Added code to connect to server.
     time.sleep(1)
     if ( not o.is_connected() ): #&L Added check for socket; don't run if se
