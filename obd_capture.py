@@ -2,11 +2,14 @@
 
 import obd_io
 import serial
+import base64    #&L Added for authentication
 import platform
 import obd_sensors
 import json
 import socket    #&L Added socket library
 import urllib2   #MJ Added url library (urllib) ---If Python 2.x use urllib2
+
+#JD.. the raspberry pi had python 2.7 installed so left it at that and changed this code a little
 
 from datetime import datetime
 import time
@@ -18,6 +21,7 @@ class OBD_Capture():
         self.port = None
         self.soc = None #&L add socket as member
         localtime = time.localtime(time.time())
+        auth_string = base64.encodestring('%s:%s' % ('user', 'passwd') #&L Needs to be changed to a real user.
 
     def socConnect(self): #&L Added function to connect to host. We should probably change the port. Also, we should propbably add some error checking.
         HOST = '203.42.134.229'    # The remote host. Correct address.
@@ -26,19 +30,6 @@ class OBD_Capture():
         self.soc.connect((HOST, PORT))    #JD Should be self.soc.connect()  ??  #&L Will fail if server does not accept. Might be worth trying on a local network.
         #JD I am pretty sure some sort of authentication will be needed here when connecting to the server ??
 
-    def httpAuthenticate(self):                        
-        #Jacob------------------Authentication-----------------------                
-        # Create an OpenerDirector with support for Basic HTTP Authentication...
-        auth_handler = urllib2.HTTPBasicAuthHandler()
-        auth_handler.add_password(realm='OBDII',
-                                  uri='http://203.42.134.229/',
-                                  user='adam',        #JD also tried user|passwd combination uow|m2muow
-                                  passwd='adam')
-        opener = urllib2.build_opener(auth_handler)
-        # ...and install it globally so it can be used with urlopen.
-        urllib2.install_opener(opener)
-        #------------------------------------------------------------                
-		
     def socIsConnected(self):
         return self.soc;
 
@@ -97,16 +88,17 @@ class OBD_Capture():
                     sensorIndex = supportedSensor[0]
                     (name, value, unit) = self.port.sensor(sensorIndex)
                     json_data.append({name + " ("+unit+")":value})    #JD   fixed str and list issue
-                    print name + " = " + str(value) +" "+ unit
+                    print name + " = " + str(value) +" "+ unit        #JD. Comment this line out when not debugging
 
-                print "\n"+json.dumps(json_data)         #JD SEND THIS TO SERVER PERIODICALLY (Single packet of information)
+                print "\n"+json.dumps(json_data)         #JD SEND THIS TO SERVER PERIODICALLY (Single packet of information) #JD. Comment this line out when not debugging
                 #self.soc.send(json.dumps(json_data))   #JD using mitch's code #&L Send to server.
 
                 #------------------------Mitch's Code------------------------
                 #Crease a http request, chuck in the correct address when adam gives us one
                 request = urllib2.Request('http://203.42.134.229/')    #JD Added IP address, will assume saving to home directory
+                #Add authentication.
+                request.add_header("Authorization", "Basic %s" % auth_string) #&L Added authentication header.
                 #Assume that we have to do proper http, so add a header specifying that it's json
-                request.add_header('Authorization', b'Basic ' + base64.b64encode(username + b':' + password)) #&L Added 
                 request.add_header('Content-Type', 'application/json')
                 #Send the request and attach the raw json data
                 response = urllib2.urlopen(request,json.dumps(json_data))
@@ -122,7 +114,6 @@ if __name__ == "__main__":
 
     o = OBD_Capture()
     o.connect()
-	o.httpAuthenticate()
     #o.socConnect()    #JD stub, using mitch's code #&L Added code to connect to server.
     time.sleep(1)
     if ( not o.is_connected() ): #&L Added check for socket; don't run if se
