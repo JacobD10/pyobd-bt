@@ -21,7 +21,7 @@ class OBD_Capture():
         self.port = None
         self.soc = None #&L add socket as member
         localtime = time.localtime(time.time())
-        auth_string = base64.encodestring('%s:%s' % ('user', 'passwd') #&L Needs to be changed to a real user.
+        auth_string = base64.encodestring('%s:%s' % ('user', 'passwd')) #&L Needs to be changed to a real user.
 
     def socConnect(self): #&L Added function to connect to host. We should probably change the port. Also, we should propbably add some error checking.
         HOST = '203.42.134.229'    # The remote host. Correct address.
