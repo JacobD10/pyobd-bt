@@ -21,7 +21,7 @@ class OBD_Capture():
         self.port = None
         self.soc = None #&L add socket as member
         localtime = time.localtime(time.time())
-        auth_string = base64.encodestring('%s:%s' % ('user', 'passwd')) #&L Needs to be changed to a real user.
+        self.auth_string = base64.encodestring('%s:%s' % ('uow', 'm2muow')) #&L Needs to be changed to a real user. #JD. Changed to self.auth_string
 
     def socConnect(self): #&L Added function to connect to host. We should probably change the port. Also, we should propbably add some error checking.
         HOST = '203.42.134.229'    # The remote host. Correct address.
@@ -97,7 +97,7 @@ class OBD_Capture():
                 #Crease a http request, chuck in the correct address when adam gives us one
                 request = urllib2.Request('http://203.42.134.229/')    #JD Added IP address, will assume saving to home directory
                 #Add authentication.
-                request.add_header("Authorization", "Basic %s" % auth_string) #&L Added authentication header.
+                request.add_header("Authorization", "Basic %s" % self.auth_string) #&L Added authentication header. #JD. Changed to self.auth_string
                 #Assume that we have to do proper http, so add a header specifying that it's json
                 request.add_header('Content-Type', 'application/json')
                 #Send the request and attach the raw json data
