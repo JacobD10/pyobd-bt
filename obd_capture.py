@@ -63,7 +63,7 @@ class OBD_Capture():
             else:
                 self.unsupportedSensorList.append([i+1, obd_sensors.SENSORS[i+1]])
         print "--- Supported OBDII PIDs ---"
-		print "Index \t Name"
+        print "Index \t Name"
         for supportedSensor in self.supportedSensorList:
             print str(supportedSensor[0]) + "\t" + str(supportedSensor[1].shortname)        
         
