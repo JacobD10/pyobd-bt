@@ -62,11 +62,12 @@ class OBD_Capture():
                 self.supportedSensorList.append([i+1, obd_sensors.SENSORS[i+1]])
             else:
                 self.unsupportedSensorList.append([i+1, obd_sensors.SENSORS[i+1]])
-        
+        print "--- Supported OBDII PIDs ---"
+		print "Index \t Name"
         for supportedSensor in self.supportedSensorList:
-            print "supported sensor index = " + str(supportedSensor[0]) + " " + str(supportedSensor[1].shortname)        
+            print str(supportedSensor[0]) + "\t" + str(supportedSensor[1].shortname)        
         
-        time.sleep(3)
+        time.sleep(1)
         
         if(self.port is None):
             return None
@@ -82,17 +83,17 @@ class OBD_Capture():
                 for supportedSensor in self.supportedSensorList:
                     sensorIndex = supportedSensor[0]
                     (name, value, unit) = self.port.sensor(sensorIndex)
-                    json_data.append({name + " ("+unit+")":value})    #JD
+                    json_data.append({name + " ("+unit+")":value})    #JD   fixed str and list issue
 
-                print json.dumps(json_data)         #JD SEND THIS TO SERVER PERIODICALLY (Single packet of information)
+                print "\n"+json.dumps(json_data)         #JD SEND THIS TO SERVER PERIODICALLY (Single packet of information)
                 #self.soc.send(json.dumps(json_data))   #JD using mitch's code #&L Send to server.
                 
                 #Jacob------------------Authentication-----------------------                
                 # Create an OpenerDirector with support for Basic HTTP Authentication...
                 auth_handler = urllib2.HTTPBasicAuthHandler()
-                auth_handler.add_password(realm='OBDII Info Upload',
+                auth_handler.add_password(realm='OBDII',
                                           uri='http://203.42.134.229/',
-                                          user='adam',
+                                          user='adam',        #JD also tried user|passwd combination uow|m2muow
                                           passwd='adam')
                 opener = urllib2.build_opener(auth_handler)
                 # ...and install it globally so it can be used with urlopen.
@@ -119,7 +120,7 @@ if __name__ == "__main__":
     o = OBD_Capture()
     o.connect()
     #o.socConnect()    #JD stub, using mitch's code #&L Added code to connect to server.
-    time.sleep(3)
+    time.sleep(1)
     if ( not o.is_connected() ): #&L Added check for socket; don't run if se
         print "Not connected to OBD Dongle"
     #elif ( not o.socIsConnected() ): #JD using mitch's code #JD Altered for more accurate debug
