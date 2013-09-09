@@ -109,32 +109,32 @@ class OBDPort:
                 self.State = 0
 #mmmm                
              response1=self.get_result()
-             print "1 response "+response1
+             print "1st Response: "+response1
              if response1=="atz":
                     response2=self.get_result()
-                    print "2 response "+response2
+                    print "2nd Response: "+response2
                     self.ELMver = response2
              else:
                     self.ELMver = response1
 
              #wx.PostEvent(self._notify_window, DebugEvent([2,"atz response:" + self.ELMver]))
-             print "self.state: "+str(self.State)
+             #print "self.state: "+str(self.State)
 
              self.send_command("ate0")  # echo off
              time.sleep(0.2)
-             print self.get_result()
+             #print self.get_result()
              #wx.PostEvent(self._notify_window, DebugEvent([2,"ate0 response:" + self.get_result()]))
 
              self.send_command("at sp 0") # Set automatic protocol search mode 
              time.sleep(0.3)
              answ=self.get_result()
-             print answ
+             print "Connection: " + answ
              #wx.PostEvent(self._notify_window, DebugEvent([2,"atsp0 response:" + answ]))
 
              self.send_command("0100")
              time.sleep(0.3)
              ready = self.get_result()
-             print "Result: "+ready
+             print "Supported PIDs: "+ready
              time.sleep(0.5)
              #wx.PostEvent(self._notify_window, DebugEvent([2,"0100 response1:" + ready]))
 
@@ -148,18 +148,18 @@ class OBDPort:
 
              if ready=="BUS INIT: OK":
                 #ready=self.get_result()
-                print "Now: "+ready
+                print "Supported PIDs: "+ready
                 #wx.PostEvent(self._notify_window, DebugEvent([2,"0100 response2:" + ready]))
                 return None
 
              elif ready=="BUSINIT: ...OK":
                 #ready=self.get_result()
-                print "Now: "+ready
+                print "Supported PIDs: "+ready
                 #wx.PostEvent(self._notify_window, DebugEvent([2,"0100 response2:" + ready]))
                 return None
             
              elif ready[:2]=="41":
-                print "Now: "+ready
+                print "Supported PIDs: "+ready
                 #wx.PostEvent(self._notify_window, DebugEvent([2,"0100 response2:" + ready]))
                 return None
 
@@ -209,7 +209,7 @@ class OBDPort:
          
          # 9 seems to be the length of the shortest valid response
          if len(code) < 7:
-             print "BogusCode"
+             print "Unrecognised Response"
              os.popen('dbus-send --type=method_call --dest=org.freedesktop.Notifications /org/freedesktop/Notifications org.freedesktop.Notifications.SystemNoteInfoprint string:"ERROR: BogusCode"')
              time.sleep(0.5)
              #raise "BogusCode"
@@ -237,7 +237,7 @@ class OBDPort:
     
      def get_result(self):
          """Internal use only: not a public interface"""
-         time.sleep(0.4)
+         time.sleep(0.1)
          if self.port:
              buffer = ""
              while 1:
@@ -260,7 +260,7 @@ class OBDPort:
          cmd = sensor.cmd
          self.send_command(cmd)
          data = self.get_result()
-	 print "."
+		 print '.'
          #print "data: "+data
          
          if data:
