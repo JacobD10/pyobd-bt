@@ -24,7 +24,7 @@ class OBD_Capture():
         self.auth_string = base64.encodestring('%s:%s' % ('uow', 'm2muow')) #&L Needs to be changed to a real user. #JD. Changed to self.auth_string
 
     def testServerConnection(self):    #JD. Mock up data to test transmission   
-		try:    
+        try:    
             json_data = []
             json_data.append({'time':'hh:mm:ss'})    
             json_data.append({'car_id':'1'})    
@@ -39,7 +39,7 @@ class OBD_Capture():
             request.add_header('Content-Type', 'application/json')
             response = urllib2.urlopen(request,json.dumps(json_data))
             print "DEBUG: No error occurred while posting to server"
-		except urllib2.HTTPError as ex:
+        except urllib2.HTTPError as ex:
             print "Failed to HTTP POST: " + str(ex.code)+" " + str(ex.reason)
         
 
