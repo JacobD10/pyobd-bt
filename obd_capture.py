@@ -82,20 +82,33 @@ class OBD_Capture():
                 json_data = []    #JD
                 localtime = datetime.now()
                 current_time = str(localtime.hour)+":"+str(localtime.minute)+":"+str(localtime.second)+"."+str(localtime.microsecond)
-                json_data.append({'Time':current_time})    #JD
+                json_data.append({'time':current_time})    #JD
+                json_data.append({'car_id':'1'})    #JD
                 results = {}
                 for supportedSensor in self.supportedSensorList:
                     sensorIndex = supportedSensor[0]
                     (name, value, unit) = self.port.sensor(sensorIndex)
                     json_data.append({name + " ("+unit+")":value})    #JD   fixed str and list issue
                     print name + " = " + str(value) +" "+ unit        #JD. Comment this line out when not debugging
-
+                
+				#JD. Mock up data to test transmission .. Comment out when not debugging
+                json_data = []    #JD
+                json_data.append({'time':current_time})    #JD
+                json_data.append({'car_id':'1'})    #JD
+                json_data.append({'Mock Data':'Value'})
+                json_data.append({'Fuel System Status':0400})
+                json_data.append({'Coolant Temp (C)':59})
+                json_data.append({'Engine RPM':970})
+                json_data.append({'Timing Advance (degrees)':8.0})
+                json_data.append({'Air Flow Rate (MAF) (lb/min)':0.44444736})
+				#End Mock up data
+				
                 print "\n"+json.dumps(json_data)         #JD SEND THIS TO SERVER PERIODICALLY (Single packet of information) #JD. Comment this line out when not debugging
                 #self.soc.send(json.dumps(json_data))   #JD using mitch's code #&L Send to server.
 
                 #------------------------Mitch's Code------------------------
                 #Crease a http request, chuck in the correct address when adam gives us one
-                request = urllib2.Request('http://203.42.134.229/')    #JD Added IP address, will assume saving to home directory
+                request = urllib2.Request('http://203.42.134.229/api/v1/logs')    #JD Added IP address, will assume saving to home directory
                 #Add authentication.
                 request.add_header("Authorization", "Basic %s" % self.auth_string) #&L Added authentication header. #JD. Changed to self.auth_string
                 #Assume that we have to do proper http, so add a header specifying that it's json
