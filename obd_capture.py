@@ -21,17 +21,24 @@ class OBD_Capture():
         self.port = None
         self.soc = None #&L add socket as member
         localtime = time.localtime(time.time())
+        self.server_url = 'http://203.42.134.229/api/v1/logs'    #JD. Added global URL string
         self.auth_string = base64.encodestring('%s:%s' % ('uow', 'm2muow')) #&L Needs to be changed to a real user. #JD. Changed to self.auth_string
 
-    def socConnect(self): #&L Added function to connect to host. We should probably change the port. Also, we should propbably add some error checking.
-        HOST = '203.42.134.229'    # The remote host. Correct address.
-        PORT = 50007              # The same port as used by the server
-        self.soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.soc.connect((HOST, PORT))    #JD Should be self.soc.connect()  ??  #&L Will fail if server does not accept. Might be worth trying on a local network.
-        #JD I am pretty sure some sort of authentication will be needed here when connecting to the server ??
-
-    def socIsConnected(self):
-        return self.soc;
+    def testServerConnection(self):    #JD. Mock up data to test transmission   
+        json_data = []   
+        json_data.append({'time':'hh:mm:ss'})    
+        json_data.append({'car_id':'1'})    
+        json_data.append({'Mock Data':'Value'})
+        json_data.append({'Fuel System Status':0400})
+        json_data.append({'Coolant Temp (C)':59})
+        json_data.append({'Engine RPM':970})
+        json_data.append({'Timing Advance (degrees)':8.0})
+        json_data.append({'Air Flow Rate (MAF) (lb/min)':0.44444736})
+        request = urllib2.Request(self.server_url)   
+        request.add_header("Authorization", "Basic %s" % self.auth_string) 
+        request.add_header('Content-Type', 'application/json')
+        response = urllib2.urlopen(request,json.dumps(json_data))
+        print "DEBUG: No error occurred while posting to server"
 
     def connect(self):
         portnames = scanSerial()
@@ -91,24 +98,11 @@ class OBD_Capture():
                     json_data.append({name + " ("+unit+")":value})    #JD   fixed str and list issue
                     print name + " = " + str(value) +" "+ unit        #JD. Comment this line out when not debugging
                 
-				#JD. Mock up data to test transmission .. Comment out when not debugging
-                json_data = []    #JD
-                json_data.append({'time':current_time})    #JD
-                json_data.append({'car_id':'1'})    #JD
-                json_data.append({'Mock Data':'Value'})
-                json_data.append({'Fuel System Status':0400})
-                json_data.append({'Coolant Temp (C)':59})
-                json_data.append({'Engine RPM':970})
-                json_data.append({'Timing Advance (degrees)':8.0})
-                json_data.append({'Air Flow Rate (MAF) (lb/min)':0.44444736})
-				#End Mock up data
-				
                 print "\n"+json.dumps(json_data)         #JD SEND THIS TO SERVER PERIODICALLY (Single packet of information) #JD. Comment this line out when not debugging
-                #self.soc.send(json.dumps(json_data))   #JD using mitch's code #&L Send to server.
 
                 #------------------------Mitch's Code------------------------
                 #Crease a http request, chuck in the correct address when adam gives us one
-                request = urllib2.Request('http://203.42.134.229/api/v1/logs')    #JD Added IP address, will assume saving to home directory
+                request = urllib2.Request(self.server_url)    #JD Added IP address, will assume saving to home directory
                 #Add authentication.
                 request.add_header("Authorization", "Basic %s" % self.auth_string) #&L Added authentication header. #JD. Changed to self.auth_string
                 #Assume that we have to do proper http, so add a header specifying that it's json
@@ -126,12 +120,11 @@ class OBD_Capture():
 if __name__ == "__main__":
 
     o = OBD_Capture()
+    o.testServerConnection()    #JD. Sends mock data to server to test connection. Comment out when not debugging
     o.connect()
-    #o.socConnect()    #JD stub, using mitch's code #&L Added code to connect to server.
+    
     time.sleep(1)
-    if ( not o.is_connected() ): #&L Added check for socket; don't run if se
+    if ( not o.is_connected() ):
         print "Not connected to OBD Dongle"
-    #elif ( not o.socIsConnected() ): #JD using mitch's code #JD Altered for more accurate debug
-    #    print "Not connected to Server" #JD using mitch's code
     else:
         o.capture_data()
