@@ -19,26 +19,29 @@ from obd_utils import scanSerial
 class OBD_Capture():
     def __init__(self):
         self.port = None
-        self.soc = None #&L add socket as member
         localtime = time.localtime(time.time())
-        self.server_url = 'http://203.42.134.229/api/v1/logs'    #JD. Added global URL string
+        self.server_url = 'http://203.42.134.229/'#api/v1/logs'    #JD. Added global URL string
         self.auth_string = base64.encodestring('%s:%s' % ('uow', 'm2muow')) #&L Needs to be changed to a real user. #JD. Changed to self.auth_string
 
     def testServerConnection(self):    #JD. Mock up data to test transmission   
-        json_data = []   
-        json_data.append({'time':'hh:mm:ss'})    
-        json_data.append({'car_id':'1'})    
-        json_data.append({'Mock Data':'Value'})
-        json_data.append({'Fuel System Status':0400})
-        json_data.append({'Coolant Temp (C)':59})
-        json_data.append({'Engine RPM':970})
-        json_data.append({'Timing Advance (degrees)':8.0})
-        json_data.append({'Air Flow Rate (MAF) (lb/min)':0.44444736})
-        request = urllib2.Request(self.server_url)   
-        request.add_header("Authorization", "Basic %s" % self.auth_string) 
-        request.add_header('Content-Type', 'application/json')
-        response = urllib2.urlopen(request,json.dumps(json_data))
-        print "DEBUG: No error occurred while posting to server"
+    try:    
+            json_data = []   
+            json_data.append({'time':'hh:mm:ss'})    
+            json_data.append({'car_id':'1'})    
+            json_data.append({'Mock Data':'Value'})
+            json_data.append({'Fuel System Status':0400})
+            json_data.append({'Coolant Temp (C)':59})
+            json_data.append({'Engine RPM':970})
+            json_data.append({'Timing Advance (degrees)':8.0})
+            json_data.append({'Air Flow Rate (MAF) (lb/min)':0.44444736})
+            request = urllib2.Request(self.server_url)   
+            request.add_header("Authorization", "Basic %s" % self.auth_string) 
+            request.add_header('Content-Type', 'application/json')
+            response = urllib2.urlopen(request,json.dumps(json_data))
+            print "DEBUG: No error occurred while posting to server"
+    except urllib2.HTTPError as ex:
+        print "Failed to HTTP POST: " + str(ex.code)+" " + str(ex.reason)
+        
 
     def connect(self):
         portnames = scanSerial()
@@ -115,7 +118,9 @@ class OBD_Capture():
 
         except KeyboardInterrupt:
             self.port.close()
-            print("stopped")
+            print("Stopped")
+        except urllib2.HTTPError as ex:    #JD. Added http exception handling
+            print "Failed to upload to server: " + str(ex.code)+" " + str(ex.reason)
 
 if __name__ == "__main__":
 
