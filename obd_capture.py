@@ -25,7 +25,7 @@ class OBD_Capture():
 
     def testServerConnection(self):    #JD. Mock up data to test transmission   
 		try:    
-            json_data = []   
+            json_data = []
             json_data.append({'time':'hh:mm:ss'})    
             json_data.append({'car_id':'1'})    
             json_data.append({'Mock Data':'Value'})
@@ -40,7 +40,7 @@ class OBD_Capture():
             response = urllib2.urlopen(request,json.dumps(json_data))
             print "DEBUG: No error occurred while posting to server"
 		except urllib2.HTTPError as ex:
-			print "Failed to HTTP POST: " + str(ex.code)+" " + str(ex.reason)
+            print "Failed to HTTP POST: " + str(ex.code)+" " + str(ex.reason)
         
 
     def connect(self):
