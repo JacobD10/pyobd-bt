@@ -8,6 +8,7 @@ import obd_sensors
 import json
 import socket    #&L Added socket library
 import urllib2   #MJ Added url library (urllib) ---If Python 2.x use urllib2
+import httplib
 
 #JD.. the raspberry pi had python 2.7 installed so left it at that and changed this code a little
 
@@ -20,14 +21,17 @@ class OBD_Capture():
     def __init__(self):
         self.port = None
         localtime = time.localtime(time.time())
-        self.server_url = 'http://203.42.134.229/'#api/v1/logs'    #JD. Added global URL string
+        httplib.HTTPConnection._http_vsn = 10
+        httplib.HTTPConnection._http_vsn_str = 'HTTP/1.0'
+        #self.server_url = 'http://203.42.134.229/api/v1/logs'    #JD. Added global URL string
+        self.server_url = 'http://home.adebono.com/m2m/api/v1/logs'
         self.auth_string = base64.encodestring('%s:%s' % ('uow', 'm2muow')) #&L Needs to be changed to a real user. #JD. Changed to self.auth_string
 
     def testServerConnection(self):    #JD. Mock up data to test transmission   
         try:    
-            json_data = []
-            json_data.append({'time':'hh:mm:ss'})    
+            json_data = []    
             json_data.append({'car_id':'1'})    
+            json_data.append({'time':'hh:mm:ss'})
             json_data.append({'Mock Data':'Value'})
             json_data.append({'Fuel System Status':0400})
             json_data.append({'Coolant Temp (C)':59})
@@ -35,10 +39,11 @@ class OBD_Capture():
             json_data.append({'Timing Advance (degrees)':8.0})
             json_data.append({'Air Flow Rate (MAF) (lb/min)':0.44444736})
             request = urllib2.Request(self.server_url)   
-            request.add_header("Authorization", "Basic %s" % self.auth_string) 
+#            request.add_header("Authorization", "Basic %s" % self.auth_string) 
             request.add_header('Content-Type', 'application/json')
             response = urllib2.urlopen(request,json.dumps(json_data))
-            print "DEBUG: No error occurred while posting to server"
+            print json.dumps(json_data)
+            print "Successfully Sent HTTP Packet"
         except urllib2.HTTPError as ex:
             print "Failed to HTTP POST: " + str(ex.code)+" " + str(ex.reason)
         
@@ -89,38 +94,41 @@ class OBD_Capture():
         #Loop until Ctrl C is pressed        
         try:
             while True:
-                json_data = []    #JD
-                localtime = datetime.now()
-                current_time = str(localtime.hour)+":"+str(localtime.minute)+":"+str(localtime.second)+"."+str(localtime.microsecond)
-                json_data.append({'time':current_time})    #JD
-                json_data.append({'car_id':'1'})    #JD
-                results = {}
-                for supportedSensor in self.supportedSensorList:
-                    sensorIndex = supportedSensor[0]
-                    (name, value, unit) = self.port.sensor(sensorIndex)
-                    json_data.append({name + " ("+unit+")":value})    #JD   fixed str and list issue
-                    print name + " = " + str(value) +" "+ unit        #JD. Comment this line out when not debugging
+                try:
+                    json_data = []    #JD
+                    localtime = datetime.now()
+                    current_time = str(localtime.hour)+":"+str(localtime.minute)+":"+str(localtime.second)+"."+str(localtime.microsecond)
+                    json_data.append({'time':current_time})    #JD
+                    json_data.append({'car_id':'1'})    #JD
+                    results = {}
+                    for supportedSensor in self.supportedSensorList:
+                            sensorIndex = supportedSensor[0]
+                            (name, value, unit) = self.port.sensor(sensorIndex)
+                            json_data.append({name + " ("+unit+")":value})    #JD   fixed str and list issue
+                            print name + " = " + str(value) +" "+ unit        #JD. Comment this line out when not debugging
                 
-                print "\n"+json.dumps(json_data)         #JD SEND THIS TO SERVER PERIODICALLY (Single packet of information) #JD. Comment this line out when not debugging
+                    print "\n"+json.dumps(json_data)         #JD SEND THIS TO SERVER PERIODICALLY (Single packet of information) #JD. Comment this line out when not debugging
 
-                #------------------------Mitch's Code------------------------
-                #Crease a http request, chuck in the correct address when adam gives us one
-                request = urllib2.Request(self.server_url)    #JD Added IP address, will assume saving to home directory
-                #Add authentication.
-                request.add_header("Authorization", "Basic %s" % self.auth_string) #&L Added authentication header. #JD. Changed to self.auth_string
-                #Assume that we have to do proper http, so add a header specifying that it's json
-                request.add_header('Content-Type', 'application/json')
-                #Send the request and attach the raw json data
-                response = urllib2.urlopen(request,json.dumps(json_data))
-                #----------------------------End-----------------------------
+                    #------------------------Mitch's Code------------------------
+                    #Crease a http request, chuck in the correct address when adam gives us one
+                    request = urllib2.Request(self.server_url)    #JD Added IP address, will assume saving to home directory
+                    #Add authentication.
+                    request.add_header("Authorization", "Basic %s" % self.auth_string) #&L Added authentication header. #JD. Changed to self.auth_string
+                    #Assume that we have to do proper http, so add a header specifying that it's json
+                    request.add_header('Content-Type', 'application/json')
+                    #Send the request and attach the raw json data
+                    response = urllib2.urlopen(request,json.dumps(json_data))
+                    #----------------------------End-----------------------------
                 
-                time.sleep(0.5)                 #Should probably iterate a few times before sending json data
+                    time.sleep(0.5)                 #Should probably iterate a few times before sending json data
+                    
+                #JD. Handling this exception inside the loop allows for continuation of OBD-reading upon loss of server connection 
+                except urllib2.HTTPError as ex:     #JD. Added HTTP exception handling
+                    print "Failed to upload to server: " +str(ex.code) + " " + str(ex.reason)
 
         except KeyboardInterrupt:
             self.port.close()
             print("Stopped")
-        except urllib2.HTTPError as ex:    #JD. Added http exception handling
-            print "Failed to upload to server: " + str(ex.code)+" " + str(ex.reason)
 
 if __name__ == "__main__":
 
