@@ -32,7 +32,6 @@ class OBD_Capture():
             json_data = {}    
             json_data.update({'car_id':'1'})    
             json_data.update({'time':str(int(time.time()))})
-            json_data.update({'Mock Data':'Value'})
             json_data.update({'Fuel System Status':0400})
             json_data.update({'Coolant Temp (C)':59})
             json_data.update({'Engine RPM':970})
@@ -41,8 +40,8 @@ class OBD_Capture():
             request = urllib2.Request(self.server_url)   
 #            request.add_header("Authorization", "Basic %s" % self.auth_string) 
             request.add_header('Content-Type', 'application/json')
-            print json.dumps(json_data, sort_keys=True, indent=2)
-            response = urllib2.urlopen(request,json.dumps(json_data))
+            print '['+json.dumps(json_data, sort_keys=True, indent=2)+']'
+            response = urllib2.urlopen(request,'['+json.dumps(json_data, sort_keys=True)+']')
             print "Successfully Sent HTTP Packet"
         except urllib2.HTTPError as ex:
             print "Failed to HTTP POST: " + str(ex.code)+" " + str(ex.reason)
@@ -78,9 +77,9 @@ class OBD_Capture():
         for i in range(0, len(self.supp)):
             if self.supp[i] == "1":
                 # store index of sensor and sensor object
-                self.supportedSensorList.append([i+1, obd_sensors.SENSORS[i+1]])
+                self.supportedSensorList.update([i+1, obd_sensors.SENSORS[i+1]])
             else:
-                self.unsupportedSensorList.append([i+1, obd_sensors.SENSORS[i+1]])
+                self.unsupportedSensorList.update([i+1, obd_sensors.SENSORS[i+1]])
         print "\n--- Supported OBDII PIDs ---"
         print "Index \t Name"
         for supportedSensor in self.supportedSensorList:
@@ -95,19 +94,20 @@ class OBD_Capture():
         try:
             while True:
                 try:
-                    json_data = []    #JD
+                    json_data = {}    #JD
                     localtime = datetime.now()
                     current_time = str(localtime.hour)+":"+str(localtime.minute)+":"+str(localtime.second)+"."+str(localtime.microsecond)
-                    json_data.append({'time':current_time})    #JD
-                    json_data.append({'car_id':'1'})    #JD
+					print current_time
+                    json_data.update({'time':str(int(time.time()))})    #JD
+                    json_data.update({'car_id':'1'})    #JD
                     results = {}
                     for supportedSensor in self.supportedSensorList:
                             sensorIndex = supportedSensor[0]
                             (name, value, unit) = self.port.sensor(sensorIndex)
-                            json_data.append({name + " ("+unit+")":value})    #JD   fixed str and list issue
+                            json_data.update({name + " ("+unit+")":value})    #JD   fixed str and list issue
                             print name + " = " + str(value) +" "+ unit        #JD. Comment this line out when not debugging
                 
-                    print "\n"+json.dumps(json_data)         #JD SEND THIS TO SERVER PERIODICALLY (Single packet of information) #JD. Comment this line out when not debugging
+                    print "\n"+'['+json.dumps(json_data, sort_keys=True, indent=2)+']'         #JD SEND THIS TO SERVER PERIODICALLY (Single packet of information) #JD. Comment this line out when not debugging
 
                     #------------------------Mitch's Code------------------------
                     #Crease a http request, chuck in the correct address when adam gives us one
@@ -117,7 +117,7 @@ class OBD_Capture():
                     #Assume that we have to do proper http, so add a header specifying that it's json
                     request.add_header('Content-Type', 'application/json')
                     #Send the request and attach the raw json data
-                    response = urllib2.urlopen(request,json.dumps(json_data))
+                    response = urllib2.urlopen(request,'['+json.dumps(json_data, sort_keys=True, indent=2)+']')
                     #----------------------------End-----------------------------
                 
                     time.sleep(0.5)                 #Should probably iterate a few times before sending json data
