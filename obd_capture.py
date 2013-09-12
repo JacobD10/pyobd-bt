@@ -31,7 +31,7 @@ class OBD_Capture():
         try:    
             json_data = {}    
             json_data.update({'car_id':'1'})    
-            json_data.update({'time':'hh:mm:ss'})
+            json_data.update({'time':str(int(time.time()))})
             json_data.update({'Mock Data':'Value'})
             json_data.update({'Fuel System Status':0400})
             json_data.update({'Coolant Temp (C)':59})
@@ -41,8 +41,8 @@ class OBD_Capture():
             request = urllib2.Request(self.server_url)   
 #            request.add_header("Authorization", "Basic %s" % self.auth_string) 
             request.add_header('Content-Type', 'application/json')
-            response = urllib2.urlopen(request,json.dumps(json_data))
             print json.dumps(json_data, sort_keys=True, indent=2)
+            response = urllib2.urlopen(request,json.dumps(json_data))
             print "Successfully Sent HTTP Packet"
         except urllib2.HTTPError as ex:
             print "Failed to HTTP POST: " + str(ex.code)+" " + str(ex.reason)
