@@ -29,15 +29,15 @@ class OBD_Capture():
 
     def testServerConnection(self):    #JD. Mock up data to test transmission   
         try:    
-            json_data = []    
-            json_data.extend({'car_id':'1'})    
-            json_data.extend({'time':'hh:mm:ss'})
-            json_data.extend({'Mock Data':'Value'})
-            json_data.extend({'Fuel System Status':0400})
-            json_data.extend({'Coolant Temp (C)':59})
-            json_data.extend({'Engine RPM':970})
-            json_data.extend({'Timing Advance (degrees)':8.0})
-            json_data.extend({'Air Flow Rate (MAF) (lb/min)':0.44444736})
+            json_data = {}    
+            json_data.update({'car_id':'1'})    
+            json_data.update({'time':'hh:mm:ss'})
+            json_data.update({'Mock Data':'Value'})
+            json_data.update({'Fuel System Status':0400})
+            json_data.update({'Coolant Temp (C)':59})
+            json_data.update({'Engine RPM':970})
+            json_data.update({'Timing Advance (degrees)':8.0})
+            json_data.update({'Air Flow Rate (MAF) (lb/min)':0.44444736})
             request = urllib2.Request(self.server_url)   
 #            request.add_header("Authorization", "Basic %s" % self.auth_string) 
             request.add_header('Content-Type', 'application/json')
