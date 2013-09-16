@@ -97,14 +97,14 @@ class OBD_Capture():
                     json_data = {}    #JD
                     localtime = datetime.now()
                     current_time = str(localtime.hour)+":"+str(localtime.minute)+":"+str(localtime.second)+"."+str(localtime.microsecond)
-					print current_time
+                    print current_time
                     json_data.update({'time':str(int(time.time()))})    #JD
                     json_data.update({'car_id':'1'})    #JD
                     results = {}
                     for supportedSensor in self.supportedSensorList:
                             sensorIndex = supportedSensor[0]
                             (name, value, unit) = self.port.sensor(sensorIndex)
-                            json_data.update({name + " ("+unit+")":value})    #JD   fixed str and list issue
+                            json_data.update({name:value})    #JD   fixed str and list issue
                             print name + " = " + str(value) +" "+ unit        #JD. Comment this line out when not debugging
                 
                     print "\n"+'['+json.dumps(json_data, sort_keys=True, indent=2)+']'         #JD SEND THIS TO SERVER PERIODICALLY (Single packet of information) #JD. Comment this line out when not debugging

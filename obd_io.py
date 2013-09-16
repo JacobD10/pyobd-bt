@@ -281,7 +281,7 @@ class OBDPort:
          (Sensor Name (string), Sensor Value (string), Sensor Unit (string) ) """
          sensor = obd_sensors.SENSORS[sensor_index]
          r = self.get_sensor_value(sensor)
-         return (sensor.name,r, sensor.unit)#1, sensor.unit2)
+         return (sensor.shortname,r, sensor.unit)#1, sensor.unit2)
 
      def sensor_names(self):
          """Internal use only: not a public interface"""
