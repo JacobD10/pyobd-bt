@@ -1,3 +1,17 @@
+
+#######################################################################################################
+#            University of Wollongong (UOW) Telstra M2M Challenge Team                                #
+#                                                                                                     #
+# This code has been modified as part of the Telstra M2M University Challenge 2013                    #
+# It's modifications are owned by the UOW Telstra M2M Team and is not to be redistributed for sale.   #
+#                                                                                                     #
+# Contact: jacob.donley089@uowmail.edu.au                                                             # 
+# Contributions by: Jacob Donley, Luke Angove and Mitchell Just                                      #
+#                                                                                                   #
+# This header should be kept unmodified.                                                           #
+###################################################################################################
+
+
 import serial
 import platform
 
