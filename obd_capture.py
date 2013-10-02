@@ -151,9 +151,17 @@ class OBD_Capture():
 
 if __name__ == "__main__":
 
+    print ""
+    print ""
+    print "         ,---.            ,--.   ,-----. ,-----.  ,------.   "
+    print "        /  O  \ ,--.,--.,-'  '-.'  .-.  '|  |) /_ |  .-.  \  "
+    print "       |  .-.  ||  ||  |'-.  .-'|  | |  ||  .-.  \|  |  \  : "
+    print "       |  | |  |'  ''  '  |  |  '  '-'  '|  '--' /|  '--'  / "
+    print "       `--' `--' `----'   `--'   `-----' `------' `-------'  "    
+    print ""
     print "                ***   Welcome to AutOBD v1.0   ***"
     print "A innovative program written by the UOW Telstra M2M Team (Copyright 2013)"
-    print ""
+    print "                                             email: jrd089@uowmail.edu.au"
     print ""
     print "initialising ..."
     print ""
