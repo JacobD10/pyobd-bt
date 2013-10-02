@@ -36,7 +36,7 @@ class OBD_Capture():
         httplib.HTTPConnection._http_vsn = 10
         httplib.HTTPConnection._http_vsn_str = 'HTTP/1.0'
         self.server_url = 'http://203.42.134.229/api/v1/logs'    #JD. Added global URL string
-        self.auth_string = base64.encodestring('%s:%s' % ('user', 'password')) #&L Needs to be changed to a real user. #JD. Changed to self.auth_string
+        self.auth_string = base64.encodestring('%s:%s' % ('uow', 'm2muow')) #&L Needs to be changed to a real user. #JD. Changed to self.auth_string
 
     def testServerConnection(self):    #JD. Mock up data to test transmission   
         try:    
@@ -64,7 +64,7 @@ class OBD_Capture():
         portnames = scanSerial()
         print portnames
         for port in portnames:
-            self.port = obd_io.OBDPort(port, None, 2, 2)
+            self.port = obd_io.OBDPort(port, None, 2, 10)
             if(self.port.State == 0):
                 self.port.close()
                 self.port = None
@@ -151,12 +151,25 @@ class OBD_Capture():
 
 if __name__ == "__main__":
 
+    print "                ***   Welcome to AutOBD v1.0   ***"
+    print "A innovative program written by the UOW Telstra M2M Team (Copyright 2013)"
+    print ""
+    print ""
+    print "initialising ..."
+    print ""
+
     o = OBD_Capture()
     #o.testServerConnection()    #JD. Sends mock data to server to test connection. Comment out when not debugging
     o.connect()
     
     time.sleep(1)
-    if ( not o.is_connected() ):
-        print "Not connected to OBD Dongle"
-    else:
-        o.capture_data()
+    while ( not o.is_connected() ): #JD. Repeat dongle connection if failed
+        print "Not connected to OBD Dongle... Attempting connection again ..."
+        o.connect()
+        time.sleep(5)
+
+    o.capture_data() #Start data capture
+
+    print ""
+    print "Press ENTER key to exit..."
+    raw_input() #JD. Waits for user input before finally closing.

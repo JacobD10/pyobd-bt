@@ -252,7 +252,7 @@ class OBDPort:
     
      def get_result(self):
          """Internal use only: not a public interface"""
-         time.sleep(0.1)
+         #time.sleep(0.1) #JD. This may need changing to make more reliable commuincation over wireless protocols such as bluetooth. Possibly even removed.
          if self.port:
              buffer = ""
              while 1:
