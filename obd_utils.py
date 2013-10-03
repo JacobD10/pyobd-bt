@@ -18,20 +18,20 @@ import platform
 def scanSerial():
     """scan for available ports. return a list of serial names"""
     available = []
-    # for i in range(256):
-      # try: #scan standart ttyS*
-        # s = serial.Serial(i)
-        # available.append(s.portstr)
-        # s.close()   # explicit close 'cause of delayed GC in java
-      # except serial.SerialException:
-        # pass
-    # for i in range(256):
-      # try: #scan USB ttyACM
-        # s = serial.Serial("/dev/ttyACM"+str(i))
-        # available.append(s.portstr)
-        # s.close()   # explicit close 'cause of delayed GC in java
-      # except serial.SerialException:
-        # pass
+    for i in range(256):
+      try: #scan standart ttyS*
+        s = serial.Serial(i)
+        available.append(s.portstr)
+        s.close()   # explicit close 'cause of delayed GC in java
+      except serial.SerialException:
+        pass
+    for i in range(256):
+      try: #scan USB ttyACM
+        s = serial.Serial("/dev/ttyACM"+str(i))
+        available.append(s.portstr)
+        s.close()   # explicit close 'cause of delayed GC in java
+      except serial.SerialException:
+        pass
     # for i in range(256):
       # try:
         # s = serial.Serial("/dev/ttyUSB"+str(i))
